@@ -1,0 +1,704 @@
+<html>
+<head>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <style>
+    </style>
+</head>
+<body style="overflow-wrap: break-word;">
+    <div id="fileApisWarning" class="alert alert-danger" style="display: none">
+        <span>The File APIs are not fully supported in this browser.  File upload has been disabled.</span>
+    </div>
+    <div>
+        <table class="table table-striped" style="width: 100%; margin-bottom: 0px;">
+            <tbody>
+                <tr>
+                    <td>Maximum <span id="spLabelMaximumAllowedFiles"></span> files allowed.</td>
+                </tr>
+                <tr>
+                    <td><span id="spLabelAllowedFileSize"></span> GB file size limit.</td>
+                </tr>
+                <tr>
+                    <td>
+                        The Evidence portal only accepts compressed file formats.
+                        <br />Valid file types: <span id="spLabelIncludedFiles"></span>.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        The evidence portal does not accept zip file names containing the following special characters: + : < > “ / \ | ? * # %
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="file" multiple id="fileControl" class="form-control">
+                    </td>
+                </tr>
+                <tr>
+                    <td><button class="btn btn-primary pull-left" id="uploadFileButton">Upload file(s)</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div id="errorMessage" class="alert alert-danger" style="display: none">
+        <span id="spErrorMessage">File upload failed.  Please try again.</span>
+    </div>
+    <br>
+    <div id="fileUploadInProgress" style="display: none">
+        <div id="successMessage" class="alert alert-success">
+            <span id="spSuccessMessage">Upload in progress...<i class="fa fa-spinner"></i></span>
+        </div>
+        <table class="table table-striped" style="width: 100%; margin-bottom: 0px;">
+            <tbody>
+                <tr>
+                    <td style="width:80%">Total file(s) uploaded:</td>
+                    <td style="width:20%;text-align:right;"><span id="spFileProgressCount"></span></td>
+                </tr>
+                <tr>
+                    <td style="width:80%;overflow-wrap: anywhere"><span id="spFileInProgress"></span></td>
+                    <td style="width:20%;text-align: right;"><span id="spFileInProgressPercentage"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div id="divFilesValidationError" data-toggle="collapse" style="display: none;">
+        <div>
+            <h4>Files could not be uploaded</h4>
+            <span>The following files are invalid file types, or exceed <span id="spErrorAllowedFilesize"></span> GB, or contain invalid characters in the zip file name, and cannot be uploaded to the evidence portal.</span>
+        </div>
+        <table class="table table-striped" id="filesValidationError" style="color:red; margin-bottom: 0px;">
+            <thead>
+                <tr>
+                    <th>File name</th>
+                    <th>File size</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+        <table class="table table-striped" style="width: 100%; margin-bottom: 0px;">
+            <tbody>
+                <tr>
+                    <td style="width:45%"><button id="continueUploadButton" type="button" class="btn btn-secondary pull-left">Acknowledge and continue</button></td>
+                    <td><button id="cancelUploadButton" type="button" class="btn btn-secondary pull-left" style="width:50%">Back</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <a class="" id="hlUploadedFiles" data-bs-toggle="collapse" href="#divUploadedFiles" role="button" aria-expanded="false" aria-controls="divUploadedFiles" style="text-decoration: none; display: none;">
+        <h4><span>Uploaded files <i class="fa fa-chevron-down" style="color:black;"></i></span></h4>
+    </a>
+    <div class="collapse" id="divUploadedFiles">
+        <span>The file(s) below have successfully uploaded. Once your upload is complete, click Save below.</span>
+        <table class="table table-striped" id="uploadedFiles" style="margin-bottom: 0px; overflow-wrap: anywhere">
+            <thead>
+                <tr>
+                    <th style="width:80%">File name</th>
+                    <th style="width:20%">File size</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <a class="" id="hlUploadFailedFiles" data-bs-toggle="collapse" href="#divUploadFailedFiles" role="button" aria-expanded="false" aria-controls="divUploadFailedFiles" style="text-decoration: none; display: none;">
+        <h4><span>Upload errors <i class="fa fa-chevron-down" style="color:black;"></i></span></h4>
+    </a>
+    <div class="collapse" id="divUploadFailedFiles">
+        <span>The file(s) below experienced upload errors. You can try uploading them again after clicking Save or Cancel below.</span>
+        <table class="table table-striped" id="uploadFailedFiles" style="margin-bottom: 0px; overflow-wrap: anywhere">
+            <thead>
+                <tr>
+                    <th style="width:80%">File name</th>
+                    <th style="width:20%">File size</th>
+                    <!--<th>Error</th>-->
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="modal fade" id="saveandcloseModal" tabindex="-1" role="dialog" aria-labelledby="saveandcloseModalLabel" aria-hidden="true">
+        <div class="modal-lg modal-dialog" role="document">
+           <div class="modal-content" style="width: 500px;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <h4 class="modal-title" id="confidentialModalModalLabel">Cancel file upload</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <p>Are you sure you wish to cancel this file upload? Your files have not been saved to your response.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark pull-left" style="width:140px" data-bs-toggle="modal" data-target="#saveandcloseModal" id="cancelandcloseconfirm">Yes</button>
+                    <button type="button" class="btn btn-light pull-left" style="width:140px" data-bs-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script lang="javascript">
+        var sasUrl = "";
+        var completedUploadUris = [];  //the sas uri for the file uploaded
+        var maxBlockSize = 4000 * 1024;//Each file will be split in 256 KB.
+        var numberOfBlocks = 1;
+        var selectedFile = null;
+        var processedFileNames = [];
+        var filesToUpload = [];
+        var uploadedFiles = []; //the files uploaded
+        var currentFilePointer = 0;
+        var totalBytesRemaining = 0;
+        var blockIds = new Array();
+        var blockIdPrefix = "block-";
+        var submitUri = null;
+        var bytesUploaded = 0;
+        var indexOfQueryStart = 0;
+        var excludedFiles = null;
+        var includedFiles = null;
+        var activeFile = null; //the file currently being uploaded or deleted
+        var fileUploadJsonTemplate = '{ "fileNumber":"", "fileSize":"", "fileName":"", "fileBlobStorageUri":"", "folderId":"" }';
+        var maximumFileSize = 20;
+        var maximumFilesAllowed = 10;
+        //var cancelUpload = false;
+        var fileNumber = 0;
+
+        $(document).ready(function () {
+            //debugger;
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                uploadedFiles = JSON.parse("[]");
+
+                // hide the <span> (x) element that closes the modal
+                parent.$(".closeFileUploadDialog").hide();
+
+                //bind the buttons to actions
+                $("#fileControl").bind('change', handleFileSelect);
+                $("#uploadFileButton").bind('click', uploadFiles);
+                $("#continueUploadButton").bind('click', continueUpload);
+                $("#cancelUploadButton").bind('click', clearUpload);
+                $("#UpdateButton").bind('click', saveUpload);
+                $("#btncancel").bind('click', cancelUpload);
+
+                $("#spLabelIncludedFiles").html($("#accc_allowedfileextensions").val().toLowerCase());
+              /*  excludedFiles = $("#accc_excludedfileextensions").val().toLowerCase().split(',');
+                excludedFiles = excludedFiles.map(element => {
+                    return element.trim();
+                });*/
+                
+                includedFiles = $("#accc_allowedfileextensions").val().toLowerCase().split(',');
+                includedFiles = includedFiles.map(element => {
+                    return element.trim();
+                });
+
+                //get the maximum file size
+                maximumFileSize = parseInt($("#accc_maximumfilesizeinmb").val());
+                //dispaly fize size in GB
+                var maximumFileSizeinGB = maximumFileSize / 1024;
+                $("#spLabelAllowedFileSize").html(maximumFileSizeinGB);
+                $("#spErrorAllowedFilesize").html(maximumFileSizeinGB);
+
+                //now convert megabytes back to bytes
+                maximumFileSize = (maximumFileSize * 1024) * 1024;
+                //get the maximum files allowed for upload
+                maximumFilesAllowed = parseInt($("#accc_maximumfilesallowed").val());
+                $("#spLabelMaximumAllowedFiles").html(maximumFilesAllowed);
+                //set the blob url
+                sasUrl = $("#accc_blobsaskey").val();
+                indexOfQueryStart = sasUrl.indexOf("?");
+                $("#uploadFileButton").attr("disabled", true);
+                $("#UpdateButton").attr("disabled", true);
+            } else {
+                //disable the upload file button and show the warning
+                $("#fileApisWarning").show();
+                $("#fileControl").attr("disabled", true);
+                $("#uploadFileButton").attr("disabled", true);
+                $("#UpdateButton").attr("disabled", true);
+            }
+            $("#divFilesValidationError").hide();
+            initialiseUploadedFileList();
+        });
+
+        function saveUpload() {
+            //close the modal dialog
+            //this is required to refresh the upload document subgrid and show the latest data
+            //parent.refreshDocumentCache();
+            setTimeout(function () {
+                parent.$(".form-close").click();
+            }, 500);
+        }
+
+        function cancelUpload() {
+            $("#saveandcloseModal").modal('show');
+        }
+
+        function continueUpload() {
+            $("#divFilesValidationError").hide();
+            uploadFiles();
+        }
+
+        $("#cancelandcloseconfirm").bind("click", function () {
+            parent.$(".form-close").click();
+        });
+
+        //reset the modal ready for a new upload
+        function clearUpload() {
+            $("#fileControl").val("");
+            $("#filesValidationError > tbody:last-child").html("");
+            $("#divFilesValidationError").hide();
+        }
+
+        //Read the file and find out how many blocks we would need to split it.
+        function handleFileSelect(e) {
+            $("#divFilesValidationError").hide();
+            $("#fileUploadInProgress").hide();
+            $("#errorMessage").hide();
+            $("#continueUploadButton").attr("disabled", true);
+
+            var files = e.target.files;
+            if (files == null || files == undefined || files.length == 0) {
+                return;
+            } else {
+                if (maximumFilesAllowed != null && (files.length > maximumFilesAllowed)) {
+                    $("#spErrorMessage").text("You cannot upload more than " + maximumFilesAllowed + " file(s).");
+                    $("#errorMessage").show();
+                    return;
+                }
+            }
+
+            processedFileNames = [];
+            uploadedFiles = [];
+            filesToUpload = [];
+            completedUploadUris = [];
+            bytesUploaded = 0;
+            currentFilePointer = 0;
+            totalBytesRemaining = 0;
+            var fileError = false;
+            const regexAllFormats = /\.(7z|zip|rar|z\d{1,4}|part\d+\.rar)$/;
+            //const regexForSpecialCharacters = /^[^+:]+$/;
+            const regexForSpecialCharacters = /[<>:"\/\\|?*+#%]/; ///^[^+:<>|?*"\/\\]$/;
+            //<>:"\/\\|?*
+
+            //debugger;
+            var fileTableElement = "<tbody>";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                let filenamesplit = f.name.split('.');
+                let extension1 = filenamesplit.pop().toLowerCase();
+                let isvalideextension = includedFiles.includes(extension1);
+                if (!isvalideextension) {
+                    // not valid extension. check for splitted zip
+                    let regexp = new RegExp('^[0-9]{3}$');
+                    if (regexp.test(extension1)) {
+                        let extension2 = filenamesplit.pop().toLowerCase();
+                        isvalideextension = includedFiles.includes(extension2);
+                    }
+                    if (!isvalideextension) {
+                        if (regexAllFormats.test(f.name)) {
+                            isvalideextension = true;
+                        }
+                    }
+                    
+                }
+                let fileHasInvalidCharacters = regexForSpecialCharacters.test(f.name);
+                if (!fileHasInvalidCharacters) {
+                    if (f.name.includes("\\")) {
+                        fileHasInvalidCharacters = true;
+                    }
+                }
+
+
+                //check that the file is under the size limit or the file types are allowed
+                if (f.size > maximumFileSize || !isvalideextension || fileHasInvalidCharacters) {
+                //if (f.size > maximumFileSize || !includedFiles.includes(f.name.split('.').pop().toLowerCase())) {
+                //if (f.size > maximumFileSize || excludedFiles.includes(f.name.split('.').pop().toLowerCase())) {
+                    fileTableElement += "<tr>";
+                    fileTableElement += "<td style='font-size:smaller;'>" + f.name + "</td>";
+                    fileTableElement += "<td style='font-size:smaller;'>" + formatBytes(f.size) + "</td>";
+                    fileTableElement += "</tr>";
+                    fileError = true;
+                    continue;
+                }
+                else {
+                    filesToUpload.push(f);
+                }
+            };
+            fileTableElement += "</tbody>";
+
+            if (fileError) {
+                $("#filesValidationError").html(fileTableElement);
+                if (filesToUpload.length > 0) {
+                    $("#continueUploadButton").removeAttr("disabled");
+                }
+                $("#divFilesValidationError").show();
+                return;
+            }
+
+            //initialise file progress count
+            $("#spFileProgressCount").html("0/" + files.length);
+            $("#uploadFileButton").removeAttr("disabled");
+        }
+
+        function uploadFiles() {
+            
+            //if (cancelUpload) {
+            //    return;
+            //}
+            $("#fileUploadInProgress").show();
+            $("#uploadFileButton").attr("disabled", true);
+            $("#fileControl").attr("disabled", true);
+            activeFile = null;
+            selectedFile = null;
+
+            try {
+                var files = filesToUpload;
+                for (var i = 0; i < files.length; i++) {
+                    if (!processedFileNames.includes(files[i].name)) {
+                        selectedFile = files[i];
+                        break;
+                    }
+                }
+
+                try {
+                    if (selectedFile != null) {
+                        maxBlockSize = 4000 * 1024;
+                        bytesUploaded = 0;
+                        currentFilePointer = 0;
+                        totalBytesRemaining = 0;
+
+                        $("#spFileInProgress").html(selectedFile.name);
+                        $("#spFileInProgressPercentage").html("0%");
+
+                        blockIds = new Array();
+                        var fileSize = selectedFile.size;
+                        if (fileSize < maxBlockSize) {
+                            maxBlockSize = fileSize;
+                            console.log("max block size = " + maxBlockSize);
+                        }
+                        totalBytesRemaining = fileSize;
+                        if (fileSize % maxBlockSize == 0) {
+                            numberOfBlocks = fileSize / maxBlockSize;
+                        } else {
+                            numberOfBlocks = parseInt(fileSize / maxBlockSize, 10) + 1;
+                        }
+                        console.log("total blocks = " + numberOfBlocks);
+
+                        var folderId = generateguid();
+                        submitUri = sasUrl.substring(0, indexOfQueryStart) + '/' + folderId + '/' + selectedFile.name + sasUrl.substring(indexOfQueryStart);
+                        activeFile = JSON.parse(fileUploadJsonTemplate);
+                        activeFile.fileNumber = getFileNumber();
+                        activeFile.fileName = selectedFile.name;
+                        activeFile.fileSize = formatBytes(selectedFile.size);
+                        activeFile.fileBlobStorageUri = submitUri;
+                        activeFile.folderId = folderId;
+                        uploadFileInBlocks();
+                    } else {//if no more files to upload, set the file upload attribute with json string
+                        $("#spFileInProgress").closest("tr").hide();
+                        updateFormFileUploadAttribute();
+                    }
+                }
+                catch (err) {
+                    displayUploadFailedFile(err);
+                }
+            }
+            catch (err) {
+                $("#spErrorMessage").text(err);
+                $("#errorMessage").show();
+            }
+        }
+
+        var reader = new FileReader();
+        reader.onloadend = function (evt) {
+            //if (cancelUpload) {
+            //    return;
+            //}
+            try {
+                if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+                    var uri = submitUri + '&comp=block&blockid=' + blockIds[blockIds.length - 1];
+                    var requestData = new Uint8Array(evt.target.result);
+                    $.ajax({
+                        url: uri,
+                        type: "PUT",
+                        data: requestData,
+                        processData: false,
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob');
+                        },
+                        success: function (data, status) {
+                            console.log(data);
+                            console.log(status);
+                            bytesUploaded += requestData.length;
+
+                            //update the progress
+                            var percentComplete = Math.floor(((parseFloat(bytesUploaded) / parseFloat(selectedFile.size)) * 100).toFixed(2));
+                            $("#spFileInProgressPercentage").html(percentComplete + "%");
+                            uploadFileInBlocks();
+                        },
+                        error: function (xhr, desc, err) {
+                            console.log(desc);
+                            console.log(err);
+                            //$("#spErrorMessage").text(err + desc);
+                            //$("#errorMessage").show();
+                            displayUploadFailedFile(err + desc);
+                        }
+                    });
+                }
+            }
+            catch (err) {
+                displayUploadFailedFile(err);
+            }
+        };
+
+        function uploadFileInBlocks() {
+            
+            //if (cancelUpload) {
+            //    return;
+            //}
+
+            try {
+                if (totalBytesRemaining > 0) {
+                    console.log("current file pointer = " + currentFilePointer + " bytes read = " + maxBlockSize);
+                    var fileContent = selectedFile.slice(currentFilePointer, currentFilePointer + maxBlockSize);
+                    var blockId = blockIdPrefix + pad(blockIds.length, 6);
+                    console.log("block id = " + blockId);
+                    blockIds.push(btoa(blockId));
+                    reader.readAsArrayBuffer(fileContent);
+                    currentFilePointer += maxBlockSize;
+                    totalBytesRemaining -= maxBlockSize;
+                    if (totalBytesRemaining < maxBlockSize) {
+                        maxBlockSize = totalBytesRemaining;
+                    }
+                } else {
+                    commitBlockList();
+                }
+            }
+            catch (err) {
+                displayUploadFailedFile(err);
+            }
+        }
+
+        function commitBlockList() {
+            
+            //if (cancelUpload) {
+            //    return;
+            //}
+
+            try {
+                var uri = submitUri + '&comp=blocklist';
+                console.log(uri);
+                var requestBody = '<?xml version="1.0" encoding="utf-8"?><BlockList>';
+                for (var i = 0; i < blockIds.length; i++) {
+                    requestBody += '<Latest>' + blockIds[i] + '</Latest>';
+                }
+                //to be removed, the below code is to test the upload errors list
+                //if (selectedFile.name == "1.csv") {
+                //    throw "Too big";
+                //}
+                requestBody += '</BlockList>';
+                console.log(requestBody);
+                $.ajax({
+                    url: uri,
+                    type: "PUT",
+                    data: requestBody,
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('x-ms-blob-content-type', selectedFile.type);
+                    },
+                    success: function (data, status) {
+                        console.log(data);
+                        console.log(status);
+                        console.log('End Uploading file - ' + new Date());
+                        //for files with 0 bytes
+                        if (selectedFile.size == 0) {
+                            $("#spFileInProgressPercentage").html("100%");
+                        }
+                        completedUploadUris.push(submitUri);
+                        processedFileNames.push(selectedFile.name);
+                        uploadedFiles.push(activeFile);
+                        displayUploadedFile();
+                        $("#spFileProgressCount").html(uploadedFiles.length + "/" + filesToUpload.length);
+                        if (filesToUpload.length == processedFileNames.length) {
+                            $("#spSuccessMessage").html("File upload complete.");
+                            $("#successMessage").show();
+                        }
+                        //continue uploading
+                        uploadFiles();
+                    },
+                    error: function (xhr, desc, err) {
+                        console.log(desc);
+                        console.log(err);
+                        //$("#spErrorMessage").text(err + desc);
+                        //$("#errorMessage").show();
+                        displayUploadFailedFile(err + desc);
+                    }
+                });
+            }
+            catch (err) {
+                displayUploadFailedFile(err);
+            }
+        }
+
+        function displayUploadedFile() {
+            if (activeFile != null) {
+                var rowContent = "<tr><td style='vertical-align: middle;'>" + activeFile.fileName + "</td>";
+                rowContent = rowContent + "<td style='vertical-align: middle;'>" + activeFile.fileSize + "</td>";
+                //rowContent = rowContent + "<td style='width:150px'><button type='button' class='btn btn-primary deletefile pull-right' onclick='deleteFile(" + activeFile.fileNumber + ")'>Delete File</button></td></tr>";
+                $("#uploadedFiles > tbody:last-child").append(rowContent);
+                $("#hlUploadedFiles").show();
+            }
+        }
+
+        function displayUploadFailedFile(err) {
+            if (activeFile != null) {
+                var rowContent = "<tr><td style='vertical-align: middle;'>" + activeFile.fileName + "</td>";
+                //rowContent = rowContent + "<td style='vertical-align: middle;'>" + activeFile.fileSize + "</td>";
+                //rowContent = rowContent + "<td style='vertical-align: middle;'>" + err + "</td></tr>";
+                rowContent = rowContent + "<td style='vertical-align: middle;'>" + activeFile.fileSize + "</td></tr>";
+                $("#uploadFailedFiles > tbody:last-child").append(rowContent);
+                processedFileNames.push(activeFile.fileName);
+                $("#hlUploadFailedFiles").show();
+                if (filesToUpload.length == processedFileNames.length) {
+                    $("#spSuccessMessage").html("File upload complete.");
+                    $("#successMessage").show();
+                }
+                //continue uploading
+                uploadFiles();
+            }
+        }
+
+        function updateFormFileUploadAttribute() {
+            if (uploadedFiles != null && uploadedFiles.length > 0) {
+                $("#accc_fileupload").val(JSON.stringify(uploadedFiles));
+                $("#UpdateButton").removeAttr("disabled");
+            }
+        }
+
+        function deleteFile(fileNumber) {
+            var index = -1;
+            var fileUpload = null;
+
+            for (var i = 0; i < uploadedFiles.length; i++) {
+                if (uploadedFiles[i].fileNumber == fileNumber) {
+                    index = i;
+                    break;
+                }
+            }
+
+            fileUpload = uploadedFiles[index];
+            var deleteUri = fileUpload.fileBlobStorageUri;
+            uploadedFiles.splice(index, 1);
+            $("#accc_fileupload").text(JSON.stringify(uploadedFiles));
+            DeleteFileFromBlob(deleteUri);
+        }
+
+        function DeleteFileFromBlob(deleteUri) {
+            $.ajax({
+                url: deleteUri,
+                type: "DELETE",
+                processData: false,
+                success: function (data, status) {
+                    console.log("file deleted");
+                    reGenerateUploadedFileList()
+                },
+                error: function (xhr, desc, err) {
+                    console.log(desc);
+                    console.log(err);
+                }
+            });
+
+        }
+
+        //deletes the files that just been uploaded but not yet saved to the JSON string
+        //function deleteAllUploadedFiles() {
+        //    if (completedUploadUris != null && completedUploadUris.length > 0) {
+        //        for (var i = 0; i < completedUploadUris.length; i++) {
+        //            if (completedUploadUris[i] != null) {
+        //                $.ajax({
+        //                    url: completedUploadUris[i],
+        //                    type: "DELETE",
+        //                    processData: false,
+        //                    success: function (data, status) {
+        //                        console.log("File deletion is success.");
+        //                    },
+        //                    error: function (xhr, desc, err) {
+        //                        console.log(desc);
+        //                        console.log(err);
+        //                    }
+        //                });
+        //            }
+        //        }
+        //    }
+        //}
+
+        function initialiseUploadedFileList() {
+            $("#hlUploadedFiles").hide();
+            $("#uploadedFiles > tbody:last-child").html("");
+            $("#hlUploadFailedFiles").hide();
+            $("#uploadFailedFiles > tbody:last-child").html("");
+        }
+
+        //display all the uploaded files in the table
+        function reGenerateUploadedFileList() {
+            $('#uploadedFiles > tbody:last-child').html("");
+
+            if (uploadedFiles.length == 0) {
+                //do nothing
+            } else {
+                for (var j = 0; j < uploadedFiles.length; j++) {
+                    var rowContent = "<tr><td style='vertical-align: middle;'>" + uploadedFiles[j].fileName + "</td>";
+                    rowContent = rowContent + "<td style='vertical-align: middle;'>" + uploadedFiles[j].fileSize + "</td>";
+                    //rowContent = rowContent + "<td style='width:150px'><button type='button' class='btn btn-primary deletefile pull-right' onclick='deleteFile(" + uploadedFiles[j].fileNumber + ")'>Delete File</button></td></tr>";
+                    $('#uploadedFiles > tbody:last-child').append(rowContent);
+                }
+                updateFormFileUploadAttribute();
+            }
+        }
+
+        //get the next unique ID for a file
+        function getFileNumber() {
+            for (var i = 0; i < uploadedFiles.length; i++) {
+                var id = parseInt(uploadedFiles[i].fileNumber);
+
+                if (id > fileNumber) {
+                    fileNumber = id;
+                }
+            }
+
+            fileNumber = fileNumber + 1;
+            return fileNumber;
+        }
+
+        //return a pretty-printed file size
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function generateguid() {
+            function str4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+            return str4() + str4() + '-' + str4() + '-' + str4() + '-' + str4() + '-' + str4() + str4() + str4();
+        }
+
+        function pad(number, length) {
+            var str = '' + number;
+            while (str.length < length) {
+                str = '0' + str;
+            }
+            return str;
+        }
+    </script>
+</body>
+</html>
